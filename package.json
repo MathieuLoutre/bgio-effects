@@ -13,7 +13,7 @@
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "tsc",
-    "prerelease": "npm t && npm run build",
+    "prepare": "npm t && npm run clean && npm run build",
     "release": "standard-version -s",
     "lint": "eslint src",
     "prettier": "prettier --write --single-quote src",
