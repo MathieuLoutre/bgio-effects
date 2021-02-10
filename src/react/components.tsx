@@ -9,7 +9,7 @@ import type { InternalEffectShape } from './types';
 import {
   EffectsContext,
   EffectsPropsContext,
-  EffectsQueueContext,
+  // EffectsQueueContext,
 } from './contexts';
 
 /**
@@ -125,7 +125,7 @@ function EffectsProvider<
     bgioProps: boardProps,
   });
 
-  const { bgioProps } = state;
+  // const { bgioProps } = state;
 
   const [qState, setQueueState] = useRefState<QueueState>({
     queue: [],
@@ -167,6 +167,8 @@ function EffectsProvider<
 
     // Also update the global boardgame.io props once their time is reached.
     if (elapsedT >= bgioStateT && boardProps !== state.bgioProps) {
+      console.log('BGIO-EFFECT', 'raf', 'bgioprops');
+
       setState({
         ...state,
         bgioProps: boardProps,
@@ -185,6 +187,8 @@ function EffectsProvider<
         updateQueue.queue = qState.current.queue.slice(i);
       }
 
+      console.log('BGIO-EFFECT', 'raf', 'queuestate');
+
       setQueueState(updateQueue);
     }
   }, false);
@@ -195,6 +199,8 @@ function EffectsProvider<
   useEffect(() => {
     const update: InteralState = { ...state };
 
+    console.log('BGIO-EFFECT', 'useEffect');
+
     if (!effects || id === state.prevId) {
       // If some non-game state props change, or the effects plugin is not
       // enabled, still update boardgame.io props for the board component.
@@ -202,6 +208,8 @@ function EffectsProvider<
         (!updateStateAfterEffects || !isRafActive()) &&
         boardProps !== state.bgioProps
       ) {
+        console.log('BGIO-EFFECT', 'useEffect', 'bgioprops');
+
         update.bgioProps = boardProps;
         setState(update);
       }
@@ -219,6 +227,7 @@ function EffectsProvider<
 
     update.startT = performance.now();
 
+    console.log('BGIO-EFFECT', 'useEffect', 'queue & state');
     setState(update);
 
     startRaf();
@@ -235,55 +244,62 @@ function EffectsProvider<
     qState,
   ]);
 
-  /**
-   * Callback that clears the effect queue, cancelling future effects and
-   * immediately calling any outstanding onEnd callbacks.
-   */
-  const clear = useCallback(() => {
-    stopRaf();
-    emitAllEffects(endEmitter, qState.current.activeQueue, boardProps);
-    setQueueState({
-      queue: [],
-      activeQueue: [],
-    });
-    if (boardProps !== state.bgioProps) {
-      setState({
-        ...state,
-        bgioProps: boardProps,
-      });
-    }
-  }, [stopRaf, endEmitter, qState, setQueueState, boardProps, state]);
+  // /**
+  //  * Callback that clears the effect queue, cancelling future effects and
+  //  * immediately calling any outstanding onEnd callbacks.
+  //  */
+  // const clear = useCallback(() => {
+  //   console.log("BGIO-EFFECT", 'clear')
 
-  /**
-   * Callback that immediately emits all remaining effects and clears the queue.
-   * When flushing, onEnd callbacks are run immediately.
-   */
-  const flush = useCallback(() => {
-    emitAllEffects(emitter, qState.current.queue, boardProps);
-    clear();
-  }, [emitter, qState, clear, boardProps]);
+  //   stopRaf();
+  //   emitAllEffects(endEmitter, qState.current.activeQueue, boardProps);
+  //   setQueueState({
+  //     queue: [],
+  //     activeQueue: [],
+  //   });
+  //   if (boardProps !== state.bgioProps) {
+  //     setState({
+  //       ...state,
+  //       bgioProps: boardProps,
+  //     });
+  //   }
+  // }, [stopRaf, endEmitter, qState, setQueueState, boardProps, state]);
 
-  /**
-   * Callback that updates the props to the latest props received
-   */
-  const update = useCallback(() => {
-    if (boardProps !== bgioProps) {
-      setState((state) => ({
-        ...state,
-        bgioProps: boardProps,
-      }));
-    }
-  }, [boardProps, bgioProps]);
+  // /**
+  //  * Callback that immediately emits all remaining effects and clears the queue.
+  //  * When flushing, onEnd callbacks are run immediately.
+  //  */
+  // const flush = useCallback(() => {
+  //   console.log("BGIO-EFFECT", 'flush')
+  //   emitAllEffects(emitter, qState.current.queue, boardProps);
+  //   clear();
+  // }, [emitter, qState, clear, boardProps]);
+
+  // /**
+  //  * Callback that updates the props to the latest props received
+  //  */
+  // const update = useCallback(() => {
+  //   console.log("BGIO-EFFECT", 'update')
+
+  //   if (boardProps !== bgioProps) {
+  //     setState((state) => ({
+  //       ...state,
+  //       bgioProps: boardProps,
+  //     }));
+  //   }
+  // }, [boardProps, bgioProps]);
+
+  console.log('BGIO-EFFECT', 'queue size', qState.current.queue.length);
 
   return (
     <EffectsContext.Provider value={{ emitter, endEmitter }}>
-      <EffectsQueueContext.Provider
-        value={{ clear, flush, update, size: qState.current.queue.length }}
-      >
-        <EffectsPropsContext.Provider value={state.bgioProps}>
-          <Board {...(state.bgioProps as P)} />
-        </EffectsPropsContext.Provider>
-      </EffectsQueueContext.Provider>
+      {/* <EffectsQueueContext.Provider
+        value={{ clear, flush, update }} // size: qState.current.queue.length
+      > */}
+      <EffectsPropsContext.Provider value={state.bgioProps}>
+        <Board {...(state.bgioProps as P)} />
+      </EffectsPropsContext.Provider>
+      {/* </EffectsQueueContext.Provider> */}
     </EffectsContext.Provider>
   );
 }

@@ -13,7 +13,7 @@
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "tsc",
-    "prepare": "npm t && npm run clean && npm run build",
+    "prepare": "npm run clean && npm run build",
     "release": "standard-version -s",
     "lint": "eslint src",
     "prettier": "prettier --write --single-quote src",
@@ -23,8 +23,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run prettier",
-      "pre-push": "npm t"
+      "pre-commit": "npm run prettier"
     }
   },
   "eslintConfig": {
